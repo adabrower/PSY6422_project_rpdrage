@@ -1,0 +1,136 @@
+---
+title: "RPDRage"
+author: "Danni Brower"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The Age of Drag Race: Is Rupaul's Drag Race biased towards younger queens? 
+
+&nbsp;
+
+### Research Question
+
+Rupaul's Drag Race is a reality competition show for drag queens in which contestants compete to be America's next Drag Super Star. The show has received 25 Emmy awards, spawned numerous international spin offs, and is generally considered a remarkable, worldwide phenomenon that has brought an obscure and marginalised aspect of queer culture to the masses. Of course, such success is always accompanied by controversy, one of which regards age. There have been claims that the show has a bias towards young queens.  
+
+
+
+This project visualises the spread of the ages of Drag Race contestants by season, as well as the ages of the queens that won each season. This will allow a general picture of the age range of the queens as well as the identification of whether there is a historical trend in it.
+
+&nbsp;
+
+### Data Origins
+
+This data is provided as part of the package *dragracer*^1^. The CRAN archive (?) for the package is <https://cran.r-project.org/package=dragracer>.
+
+A description of the projectis available at <http://svmiller.com/blog/2019/02/dragracer-rupauls-drag-race-analysis/>.
+It includes a lovely personal narrative of the creator's love of the art of drag and the competition show, the heated online discussions amongst the Drag Race fandom, the methods of data collection (mostly scraped from the Rupaul's Drag Race wiki), and some of the creator's own analyses, visualisations, and some T (conclusions) about various aspects of the show.
+
+
+Because it is a package, the first time you run this script, you must run ``install.packages(dragracer)`` first.
+
+The *dragracer* package includes three datasets:
+rpdr_contestestants, which provides information about the contestants
+rpdr_contep, which describes each contestants performance in each episode
+rpdr_ep, which gives characteristics of each episode.
+
+The relevant datasets have been exported to csv files using this code: ``write.csv(rpdr_contestants, "filepath\\filename.csv", row.names = FALSE)``. They are available in the data folder.
+
+```{r dragracer packages, results = 'hide', message = FALSE, warning=FALSE}
+#loading required packages, including the datasets
+
+library(ggplot2)
+library(plotly)
+library(magrittr)
+library(tidyverse)
+```
+
+
+```{r dragracer datasets, warning=FALSE}
+library(dragracer) #when loaded returns a catchphrase from the show
+```
+
+
+```{r dragracer preview}
+#previewing datasets
+
+head(rpdr_contestants)
+head(rpdr_contep)
+```
+
+## Data Wrangling
+
+```{r data wrangling}
+
+combined <- left_join(rpdr_contestants, rpdr_contep)
+
+ranked <- combined %>% 
+  select(c("season", "contestant","rank", "age")) %>%
+  distinct() %>%
+  group_by("season")
+
+winners <- subset(ranked, rank == "1")
+
+mean(ranked$age)
+
+mean(winners$age)
+
+
+```
+
+## Visualisation
+
+```{r pressure, echo=TRUE}
+
+age_all <- ggplot(rpdr_contestants, aes(x = factor(season), y = age)) +
+    geom_violin(aes(color = season, fill = season), alpha = 0.5) +
+    geom_point(aes(color = season, fill = season),
+                   position = position_jitterdodge(jitter.width = .1, dodge.width = 0), 
+                   shape=21, size = 1) +
+    #geom_boxplot(middle = mean(rpdr_contestants$age), color = "grey", fill = "white", alpha                         = 0.8, width = .15, outlier.shape = NA) +
+    labs(x = element_blank()) +
+    ggtitle("RPDR Contestant Ages") +
+    theme(legend.position="none",  
+    strip.background=element_blank(),
+    axis.text.x=element_text(size=10,color="black"),
+    axis.text.y=element_text(size=10,color="black"),
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(size= .75,fill = NA,color = "black"),
+    plot.margin = unit(c(.5, 0.5, .5, .5), "cm"))
+  
+age_plot <- ggplotly(age_all + geom_point(data = winners, aes(x = factor(season))))
+
+age_plot <- age_plot %>% style(hoverinfo = "skip", traces = 1:14)
+
+age_plot
+
+```
+
+## Summary, Discussion
+
+Drag Race contestants have ranged in age from 21 to 52. The average age of all participants through season 13 is `r round(mean(ranked$age), digits = 0)`. Winners average age is `r round(mean(winners$age), digits = 0)` There does not seem to be a significant trend in age across seasons. The relatively young average age of all contestants and winners upholds the commonly accepted belief that drag is a young girl's game. As beloved Drag Race contestant Katya Zamolodchkava has said, "There's nothing more depressing than an older drag queen that doesn't want to do it."^(2)^
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+**References**
+
+1. Steve Miller (2021). dragracer: Data Sets for RuPaul's Drag Race. R package version 0.1.6. https://CRAN.R-project.org/package=dragracer
+2. Mattel, Trixie & Zamolodchikova, Katya. (2020, Feb 12). UNHhhh Ep. 114: I'm in My 30s. Youtube. https://www.youtube.com/watch?v=OilvWfWkaaw
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
