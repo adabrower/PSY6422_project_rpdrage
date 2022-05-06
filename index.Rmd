@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Research Question
 
-Rupaul's Drag Race is a reality competition show for drag queens in which contestants compete to be America's next Drag Super Star. The show has received 25 Emmy awards, spawned numerous international spin offs, and is generally considered a remarkable, worldwide phenomenon that has brought an obscure and marginalised aspect of queer culture to the masses. Of course, such success is always accompanied by controversy, one of which regards age. There have been claims that the show has a bias towards young queens.  
+Rupaul's Drag Race is a reality competition show for drag queens in which contestants compete to be America's next Drag Super Star. Amongst the many topics of debate surrounding the show is whether it has a bias towards young queens.  
 
 
 
@@ -27,15 +27,14 @@ This project visualises the spread of the ages of Drag Race contestants by seaso
 
 This data is provided as part of the package *dragracer*^1^. The CRAN archive (?) for the package is <https://cran.r-project.org/package=dragracer>.
 
-A description of the projectis available at <http://svmiller.com/blog/2019/02/dragracer-rupauls-drag-race-analysis/>.
-It includes a lovely personal narrative of the creator's love of the art of drag and the competition show, the heated online discussions amongst the Drag Race fandom, the methods of data collection (mostly scraped from the Rupaul's Drag Race wiki), and some of the creator's own analyses, visualisations, and some T (conclusions) about various aspects of the show.
-
+A description of the project is available at <http://svmiller.com/blog/2019/02/dragracer-rupauls-drag-race-analysis/>.
+The data was compiled by scraping the Rupaul's Drag Race Wiki: <https://rupaulsdragrace.fandom.com/wiki/RuPaul%27s_Drag_Race_Wiki>
 
 Because it is a package, the first time you run this script, you must run ``install.packages(dragracer)`` first.
 
 The *dragracer* package includes three datasets:
 rpdr_contestestants, which provides information about the contestants
-rpdr_contep, which describes each contestants performance in each episode
+rpdr_contep, which describes each contestant's performance in each episode
 rpdr_ep, which gives characteristics of each episode.
 
 The relevant datasets have been exported to csv files using this code: ``write.csv(rpdr_contestants, "filepath\\filename.csv", row.names = FALSE)``. They are available in the data folder.
@@ -66,34 +65,51 @@ head(rpdr_contep)
 
 ```{r data wrangling}
 
+#create a data frame including the contestant's ages, season, and final ranking in the competition
+
 combined <- left_join(rpdr_contestants, rpdr_contep)
 
 ranked <- combined %>% 
-  select(c("season", "contestant","rank", "age")) %>%
-  distinct() %>%
-  group_by("season")
+          select(c("season", "contestant","rank", "age")) %>%
+          distinct() %>%
+          group_by("season")
+
+#create a data frame of winners only
 
 winners <- subset(ranked, rank == "1")
+
+head(ranked)
+
+#simple statistics
 
 mean(ranked$age)
 
 mean(winners$age)
 
 
+
+
 ```
 
 ## Visualisation
 
-```{r pressure, echo=TRUE}
+```{r age plot, echo=TRUE}
 
-age_all <- ggplot(rpdr_contestants, aes(x = factor(season), y = age)) +
+# violin and scatterplots of all contestants' ages
+
+age_all <- ggplot(ranked, aes(x = factor(season), y = age)) +
     geom_violin(aes(color = season, fill = season), alpha = 0.5) +
+    stat_summary(fun = "mean",
+                 geom = "crossbar", 
+                 width = 0.3) +
     geom_point(aes(color = season, fill = season),
                    position = position_jitterdodge(jitter.width = .1, dodge.width = 0), 
                    shape=21, size = 1) +
-    #geom_boxplot(middle = mean(rpdr_contestants$age), color = "grey", fill = "white", alpha                         = 0.8, width = .15, outlier.shape = NA) +
+  
+# graph aesthetics   
+  
     labs(x = element_blank()) +
-    ggtitle("RPDR Contestant Ages") +
+    ggtitle("Rupaul's Drag Race Contestant Ages") +
     theme(legend.position="none",  
     strip.background=element_blank(),
     axis.text.x=element_text(size=10,color="black"),
@@ -104,9 +120,13 @@ age_all <- ggplot(rpdr_contestants, aes(x = factor(season), y = age)) +
     panel.border = element_rect(size= .75,fill = NA,color = "black"),
     plot.margin = unit(c(.5, 0.5, .5, .5), "cm"))
   
+#adding interactive overlay of winners' ages
+#clean up code?
+
 age_plot <- ggplotly(age_all + geom_point(data = winners, aes(x = factor(season))))
 
-age_plot <- age_plot %>% style(hoverinfo = "skip", traces = 1:14)
+age_plot <- age_plot %>% style(hoverinfo = "skip", traces = 1:40, text = winners$age)
+age_plot <- age_plot %>% style(text = paste("Winner's age:", winners$age))
 
 age_plot
 
