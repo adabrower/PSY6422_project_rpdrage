@@ -33,11 +33,11 @@ The data was compiled by scraping the Rupaul's Drag Race Wiki: <https://rupaulsd
 Because it is a package, the first time you run this script, you must run ``install.packages(dragracer)`` first.
 
 The *dragracer* package includes three datasets:
-rpdr_contestestants, which provides information about the contestants
-rpdr_contep, which describes each contestant's performance in each episode
-rpdr_ep, which gives characteristics of each episode.
+*rpdr_contestants*, which provides information about the contestants,
+*rpdr_contep*, which describes each contestant's performance in each episode,
+*rpdr_ep*, which gives characteristics of each episode. This analysis and visualisation use the *rdpr_contestants* and *rpdr_contep* datasets.
 
-The relevant datasets have been exported to csv files using this code: ``write.csv(rpdr_contestants, "filepath\\filename.csv", row.names = FALSE)``. They are available in the data folder.
+The relevant datasets have been exported to csv files using this code: ``write.csv(df, "filepath\\filename.csv", row.names = FALSE)``. They are available in the data folder.
 
 ```{r dragracer packages, results = 'hide', message = FALSE, warning=FALSE}
 #loading required packages, including the datasets
