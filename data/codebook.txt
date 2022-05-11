@@ -1,0 +1,28 @@
+The RPDR Age PSY 6422 project visualises data from the reality competition show Rupaul's Drag Race. It uses two datasets from the dragracer package by Steven V Miller
+
+Steve Miller (2021). dragracer: Data Sets for RuPaul's Drag Race. R package version 0.1.6. https://CRAN.R-project.org/package=dragracer
+
+Details about the dragracer project, data acquisition, some analyses, and commentary are available on the creator's blog post "An Empirical Analysis of RuPaul's Drag Race Contestants": http://svmiller.com/blog/2019/02/dragracer-rupauls-drag-race-analysis/
+
+The two datasets used are rpdr_contestants and rpdr_contep
+
+rpdr_contestants has these variables:
+	season: the season the contestant competed in prefixed "S"
+	contestant: contestant name, note, this is the contestant's "drag name", not their given name
+	age
+	dob: date of birth
+	hometown: given as city, state. note, two contestants are from countries outside of the US, which is included in this column, and can make for discrepancies in coding and analysing this data point
+
+rpdr_contep has these variables:
+	season: prefixed "S"
+	rank: the contestant's final placing in the season
+	missc: whether the contestant was awarded miss congeniality in the final episode, with 1 coding for yes and 0 coding for no
+	contestant: name of contestant. note, this is the contestant's "drag name", not their given name
+	episode: episode number
+	outcome: where the contestant placed in the episode: win, high (top 3 other than win), low (bottom 3 other than bottom), bottom (eliminated)
+	eliminated: whether the contestant was eliminated in this episode, with 1 coding for yes and 0 coding for no
+	participant: whether the contestant participated in the episode, with 1 coding for yes and 0 coding for no. note: some eliminated queens have been brought back to the competition after elimination
+	minichalw: some episodes contain "mini challenges", and this column indicates whether the contestant won, with 1 coding for yes and 0 coding for no
+	finale: whether the episode was the finale, with 1 coding for yes and 0 coding for no
+	penultimate: whether the episode was the final competition episode before the finale, with 1 coding for yes and 0 coding for no. This is significant as making it to the end of the competition, ie the top 3 or 4, is considered an accomplishment in its own right.
+> 

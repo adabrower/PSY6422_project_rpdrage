@@ -1,1 +1,1 @@
-# This repository contains something new.
+# This repository is for a data visualisation project for PSY 6422 at the University of Sheffield. It contains folders for data and figures, an rmarkdown file, and the final html page. The data is from the television show Rupaul's Drag Race, and the visualisation shows the distribution of the contestants' ages by season, as well as the winner's age for each season. See the codebook in the data folder for a detailed description of the data and its origins.

@@ -1,0 +1,161 @@
+---
+title: "RPDRage"
+author: "210155383"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The Age of Drag Race: Is Rupaul's Drag Race biased towards younger queens? 
+
+&nbsp;
+
+### Research Question
+
+Rupaul's Drag Race is a reality competition show for drag queens in which contestants compete to be America's next Drag Super Star. Amongst the many topics of debate surrounding the show is whether it has a bias towards young queens.  
+
+
+
+This project visualises the spread of the ages of Drag Race contestants by season, as well as the ages of the queens that won each season. This will allow a general picture of the age range of the queens as well as the identification of whether there is a historical trend in it.
+
+&nbsp;
+
+### Data Origins
+
+This data is provided as part of the package *dragracer*^1^. The CRAN archive for the package is <https://cran.r-project.org/package=dragracer>. The github page is <https://github.com/svmiller/dragracer>
+
+A description of the project is available on the creator, Steven V. Miller's [blog post](http://svmiller.com/blog/2019/02/dragracer-rupauls-drag-race-analysis/): "An Empirical Analysis of RuPaul's Drag Race Contestants."
+The data was compiled by scraping the [Rupaul's Drag Race Wiki](https://rupaulsdragrace.fandom.com/wiki/RuPaul%27s_Drag_Race_Wiki)
+
+Because it is a package, the first time you run this script, you must run ``install.packages(dragracer)`` first.
+
+The *dragracer* package includes three datasets: *rpdr_contestants*, which provides information about the contestants, *rpdr_contep*, which describes each contestant's performance in each episode, and *rpdr_ep*, which gives characteristics of each episode. This analysis and visualisation use the *rdpr_contestants* and *rpdr_contep* datasets.
+
+The relevant datasets have been exported to csv files using this code: ``write.csv(df, "filepath\\filename.csv", row.names = FALSE)``. They are available in the data folder.
+
+```{r dragracer packages, results = 'hide', message = FALSE, warning=FALSE}
+#loading required packages with pacman package manager
+
+library(pacman)
+pacman::p_load(ggplot2, plotly, magrittr, tidyverse)
+
+```
+
+
+```{r dragracer datasets, warning=FALSE}
+library(dragracer) #when loaded returns a catchphrase from the show, omitted from pacman for flair
+```
+
+
+```{r dragracer preview}
+#previewing datasets
+
+head(rpdr_contestants)
+head(rpdr_contep)
+```
+
+## Data Preparation
+
+```{r data prep}
+
+#create a data frame including the contestant's ages, season, and final ranking in the competition
+
+combined <- left_join(rpdr_contestants, rpdr_contep)
+
+ranked <- combined %>% 
+          select(c("season", "contestant","rank", "age")) %>%
+          distinct()
+
+
+#create a data frame of winners only
+
+winners <- subset(ranked, rank == "1")
+
+#preview data ranked data frame
+
+head(ranked)
+
+# summary statistics
+
+stats <- tapply(ranked$age, ranked$season, summary)
+
+head(stats, 3)
+
+
+```
+
+## Visualisation
+
+```{r age plot, echo=TRUE}
+
+# violin and scatterplots of all contestants' ages with crossbar of mean
+
+age_all <- ggplot(ranked, aes(x = factor(season), y = age)) +
+    geom_violin(aes(color = season, fill = season), alpha = 0.5) +
+    stat_summary(fun = "mean",
+                 geom = "crossbar", 
+                 width = 0.3) +
+    geom_point(aes(color = season, fill = season),
+                   position = position_jitterdodge(jitter.width = .1, dodge.width = 0), 
+                   shape=21, size = 1) +
+  
+# graph aesthetics   
+  
+    labs(x = element_blank()) +
+    ggtitle("Rupaul's Drag Race Contestant Ages") +
+    theme(legend.position="none",  
+    strip.background=element_blank(),
+    axis.text.x=element_text(size=10,color="black"),
+    axis.text.y=element_text(size=10,color="black"),
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(size= .75,fill = NA,color = "black"),
+    plot.margin = unit(c(.5, 0.5, .5, .5), "cm"))
+  
+#adding interactive overlay of winners' ages - hover over black dot
+
+age_plot <- ggplotly(age_all + geom_point(data = winners, aes(x = factor(season))))
+
+
+age_plot <- age_plot %>%
+            style(hoverinfo = "skip", traces = 1:40) %>%
+            style(text = paste("Winner's age:", winners$age))
+
+age_plot
+
+```
+
+This visualisation shows the distribution of ages of Drag Race contestants by season, including points for individual contestants' ages, a crossbar showing the mean age of for that season, and a point showing the age of the winner, which displays the contestant's age upon hovering.
+
+&nbsp;
+
+## Summary, Discussion
+
+Drag Race contestants have ranged in age from 21 to 52. The average age of all participants through season 13 is `r round(mean(ranked$age), digits = 0)`. Winners average age is `r round(mean(winners$age), digits = 0)`. There does not seem to be a significant trend in age across seasons. The relatively young average age of all contestants and winners upholds the commonly accepted belief that drag is a young girl's game. As beloved Drag Race contestant Katya Zamolodchkava has said, "There's nothing more depressing than an older drag queen that doesn't want to do it."^(2)^
+
+&nbsp;
+
+In the future, I would like to analyse and visualise this data set further to tackle additional debates in the fandom. One visualisation I'd like to do would be of the contestants' hometowns. Queens come from all over the country, but there are also biases towards New York and L.A., with New York queens being particularly vocal about the excellence and dominance of their scene. Additionally, Puerto Rico features prominently for consistently fielding at least one queen each season. Thus, I would be interested in generating a map, but for this project, I could not find an aesthetically pleasing and practical US grid map. I was excited about applying a specific bit of knowledge from class in using the code ``separate(rpdr_contestants, col = hometown, c("town", "state"), sep = ",")`` to divide data combined into one column, ie hometown, into separate columns, ie, town and state.
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
+
+**References**
+
+1. Steve Miller (2021). dragracer: Data Sets for RuPaul's Drag Race. R package version 0.1.6. https://CRAN.R-project.org/package=dragracer
+2. Mattel, Trixie & Zamolodchikova, Katya. (2020, Feb 12). UNHhhh Ep. 114: I'm in My 30s. Youtube. https://www.youtube.com/watch?v=OilvWfWkaaw
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+
